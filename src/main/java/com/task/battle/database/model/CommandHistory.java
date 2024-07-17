@@ -26,5 +26,7 @@ public class CommandHistory {
     Unit unit;
 
     String command;
+    String details;
+
     LocalDateTime date;
 }

@@ -1,9 +1,9 @@
 package com.task.battle.database.repository;
 
-import com.task.battle.database.model.unit.Unit;
+import com.task.battle.database.model.CommandHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UnitRepository extends JpaRepository<Unit, Long> {
+public interface CommandHistoryRepository extends JpaRepository<CommandHistory, Long> {
 }

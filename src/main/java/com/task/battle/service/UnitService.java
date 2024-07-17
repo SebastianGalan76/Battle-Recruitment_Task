@@ -2,21 +2,26 @@ package com.task.battle.service;
 
 import com.task.battle.data.BoardSize;
 import com.task.battle.data.Position;
+import com.task.battle.database.model.CommandHistory;
 import com.task.battle.database.model.Game;
 import com.task.battle.database.model.Player;
 import com.task.battle.database.model.unit.Archer;
 import com.task.battle.database.model.unit.Cannon;
 import com.task.battle.database.model.unit.Transport;
 import com.task.battle.database.model.unit.Unit;
+import com.task.battle.database.repository.CommandHistoryRepository;
 import com.task.battle.database.repository.UnitRepository;
 import com.task.battle.exception.UnitActionException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @AllArgsConstructor
 public class UnitService {
     final UnitRepository unitRepository;
+    final CommandHistoryRepository commandHistoryRepository;
 
     public void moveUnit(Long unitId, Position destination) throws UnitActionException {
         Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
@@ -29,9 +34,12 @@ public class UnitService {
             throw new UnitActionException("You cannot move yet. Wait a few seconds!");
         }
 
-        if(!isValidMove(unit, destination, player.getGame())){
+        Game game = player.getGame();
+        if(!isValidMove(unit, destination, game)){
             throw new UnitActionException("Destination position is incorrect!");
         }
+
+        saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from "+unit.getPosition().getX()+", y: "+unit.getPosition().getY()+ "to (x: " +destination.getX()+", y: "+destination.getY());
 
         unit.setPosition(destination);
         unit.setMovesCount(unit.getMovesCount() + 1);
@@ -67,6 +75,8 @@ public class UnitService {
                 }
             }
         }
+
+        saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field (x: "+destination.getX()+", y: "+destination.getY());
     }
 
     private boolean isValidShoot(Unit unit, Position destination, Game game) {
@@ -113,5 +123,15 @@ public class UnitService {
     private boolean isDestinationOnBoard(BoardSize boardSize, Position destination){
         return destination.getX() >= 0 && destination.getX() <= boardSize.getWidth()
                 && destination.getY() >= 0 && destination.getY() <= boardSize.getHeight();
+    }
+
+    private void saveCommandHistory(Game game, Unit unit, String command, String details) {
+        CommandHistory history = new CommandHistory();
+        history.setGame(game);
+        history.setUnit(unit);
+        history.setCommand(command);
+        history.setDetails(details);
+        history.setDate(LocalDateTime.now());
+        commandHistoryRepository.save(history);
     }
 }
