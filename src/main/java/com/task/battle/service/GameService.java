@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class GameService {
     final GameRepository gameRepository;
 
-    public void createNewGame(GameConfiguration gameConfiguration) throws GameConfigurationException {
+    public Game createNewGame(GameConfiguration gameConfiguration) throws GameConfigurationException {
         checkGameBoard(gameConfiguration);
         checkUnitAmount(gameConfiguration);
 
@@ -41,7 +41,11 @@ public class GameService {
         playerBlack.setNextCommandTimestamp(LocalDateTime.now());
         game.getPlayers().add(playerBlack);
 
-        gameRepository.save(game);
+        for(Game oldGame:gameRepository.findAll()){
+            gameRepository.delete(oldGame);
+        }
+
+        return gameRepository.save(game);
     }
 
     private void checkGameBoard(GameConfiguration gameConfiguration) throws GameConfigurationException {

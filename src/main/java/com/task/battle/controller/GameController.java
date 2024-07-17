@@ -1,6 +1,7 @@
 package com.task.battle.controller;
 
 import com.task.battle.data.GameConfiguration;
+import com.task.battle.database.model.Game;
 import com.task.battle.exception.GameConfigurationException;
 import com.task.battle.service.GameService;
 import lombok.AllArgsConstructor;
@@ -17,8 +18,8 @@ public class GameController {
     @PostMapping("/new")
     public ResponseEntity<String> createNewGame(@RequestBody GameConfiguration gameConfiguration) {
         try{
-            gameService.createNewGame(gameConfiguration);
-            return ResponseEntity.ok("Created a new game!");
+            Game game = gameService.createNewGame(gameConfiguration);
+            return ResponseEntity.ok("Created a new game! ID: "+ game.getId());
         }catch (GameConfigurationException e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
