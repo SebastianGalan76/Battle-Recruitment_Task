@@ -19,18 +19,17 @@ import java.util.Objects;
 @Service
 @AllArgsConstructor
 public class UnitService {
-    final PlayerRepository playerRepository;
     final UnitRepository unitRepository;
 
-    public void moveUnit(Long playerId, Long unitId, Position destination) throws MoveUnitException {
-        Player player = playerRepository.findById(playerId).orElseThrow(() -> new MoveUnitException("There is no player with given id in our database!"));
-        if(!player.canMove()){
-            throw new MoveUnitException("You cannot move yet. Wait a few seconds!");
-        }
-
-        Unit unit = findPlayerUnit(unitId, player);
+    public void moveUnit(Long unitId, Position destination) throws MoveUnitException {
+        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new MoveUnitException("There is no unit with given id in our database!"));
         if(unit.isDestroyed()){
             throw new MoveUnitException("The unit is already destroyed!");
+        }
+
+        Player player = unit.getPlayer();
+        if(!player.canMove()){
+            throw new MoveUnitException("You cannot move yet. Wait a few seconds!");
         }
 
         if(!isValidMove(unit, destination, player.getGame())){
@@ -40,16 +39,6 @@ public class UnitService {
         unit.setPosition(destination);
         unit.setMovesCount(unit.getMovesCount() + 1);
         unitRepository.save(unit);
-    }
-
-    private Unit findPlayerUnit(Long unitId, Player player) throws MoveUnitException {
-        for(Unit unit:player.getUnits()){
-            if(Objects.equals(unit.getId(), unitId)){
-                return unit;
-            }
-        }
-
-        throw new MoveUnitException("Player does not have a unit with the given ID!");
     }
 
     private boolean isValidMove(Unit unit, Position destination, Game game) {
