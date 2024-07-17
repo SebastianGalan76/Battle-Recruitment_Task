@@ -34,9 +34,7 @@ public class UnitService {
         }
 
         Game game = player.getGame();
-        if(!isValidMove(unit, destination, game)){
-            throw new UnitActionException("Destination position is incorrect!");
-        }
+        checkMove(unit, destination, game);
 
         saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from "+unit.getPosition().getX()+", y: "+unit.getPosition().getY()+ "to (x: " +destination.getX()+", y: "+destination.getY());
 
@@ -59,9 +57,7 @@ public class UnitService {
         }
 
         Game game = player.getGame();
-        if(!isValidShoot(unit, destination, game)){
-            throw new UnitActionException("Destination position is incorrect!");
-        }
+        checkShoot(unit, destination, game);
 
         // Check for hitting other units
         for(Player otherPlayer:game.getPlayers()){
@@ -81,20 +77,22 @@ public class UnitService {
         saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field (x: "+destination.getX()+", y: "+destination.getY());
     }
 
-    private boolean isValidShoot(Unit unit, Position destination, Game game) {
+    private void checkShoot(Unit unit, Position destination, Game game) throws UnitActionException {
         if(!isDestinationOnBoard(game.getBoardSize(), destination)){
-            return false;
+            throw new UnitActionException("The specified destination is off the board!");
         }
 
-        return unit.validateDestination(destination, CommandTypeEnum.SHOOT);
+        if(!unit.validateDestination(destination, CommandTypeEnum.SHOOT)){
+            throw new UnitActionException("The specified unit cannot shoot there!");
+        }
     }
-    private boolean isValidMove(Unit unit, Position destination, Game game) {
+    private void checkMove(Unit unit, Position destination, Game game) throws UnitActionException {
         if(!isDestinationOnBoard(game.getBoardSize(), destination)){
-            return false;
+            throw new UnitActionException("The specified destination is off the board!");
         }
 
         if(!unit.validateDestination(destination, CommandTypeEnum.MOVE)){
-            return false;
+            throw new UnitActionException("The specified unit cannot move there!");
         }
 
         // Check for collisions with other units
@@ -106,7 +104,7 @@ public class UnitService {
 
                 if (otherUnit.getPosition().equals(destination)) {
                     if (otherUnit.getColor().equals(unit.getColor())) {
-                        return false;
+                        throw new UnitActionException("You will hit your own unit. Operation stopped!");
                     } else {
                         //Destroy an enemy unit if it collides with our transport unit
                         if(unit instanceof Transport){
@@ -117,8 +115,6 @@ public class UnitService {
                 }
             }
         }
-
-        return true;
     }
 
     private boolean isDestinationOnBoard(BoardSize boardSize, Position destination){
