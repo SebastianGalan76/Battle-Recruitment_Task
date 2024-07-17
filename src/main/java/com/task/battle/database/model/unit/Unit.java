@@ -34,4 +34,8 @@ public class Unit {
 
     boolean isDestroyed;
     int movesCount;
+
+    public boolean validateMovement(Position destination){
+        return false;
+    }
 }
