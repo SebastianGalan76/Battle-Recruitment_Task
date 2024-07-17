@@ -36,7 +36,7 @@ public class UnitService {
         Game game = player.getGame();
         checkMove(unit, destination, game);
 
-        saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from "+unit.getPosition().getX()+", y: "+unit.getPosition().getY()+ "to (x: " +destination.getX()+", y: "+destination.getY());
+        saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY());
 
         unit.setPosition(destination);
         unit.setMovesCount(unit.getMovesCount() + 1);
@@ -74,7 +74,7 @@ public class UnitService {
         }
         player.setNextCommandTimestamp(LocalDateTime.now().plusSeconds(unit.getCommandCooldown(CommandTypeEnum.SHOOT)));
 
-        saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field (x: "+destination.getX()+", y: "+destination.getY());
+        saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")");
     }
 
     private void checkShoot(Unit unit, Position destination, Game game) throws UnitActionException {
