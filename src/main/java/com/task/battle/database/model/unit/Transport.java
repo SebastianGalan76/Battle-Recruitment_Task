@@ -13,8 +13,6 @@ import java.util.Objects;
 
 @Entity
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @DiscriminatorValue("TRANSPORT")
 public class Transport extends Unit {

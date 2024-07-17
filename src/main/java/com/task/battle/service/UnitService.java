@@ -6,8 +6,6 @@ import com.task.battle.data.Position;
 import com.task.battle.database.model.CommandHistory;
 import com.task.battle.database.model.Game;
 import com.task.battle.database.model.Player;
-import com.task.battle.database.model.unit.Archer;
-import com.task.battle.database.model.unit.Cannon;
 import com.task.battle.database.model.unit.Transport;
 import com.task.battle.database.model.unit.Unit;
 import com.task.battle.database.repository.CommandHistoryRepository;
@@ -90,7 +88,6 @@ public class UnitService {
 
         return unit.validateDestination(destination, CommandTypeEnum.SHOOT);
     }
-
     private boolean isValidMove(Unit unit, Position destination, Game game) {
         if(!isDestinationOnBoard(game.getBoardSize(), destination)){
             return false;
@@ -128,7 +125,6 @@ public class UnitService {
         return destination.getX() >= 0 && destination.getX() <= boardSize.getWidth()
                 && destination.getY() >= 0 && destination.getY() <= boardSize.getHeight();
     }
-
     private void saveCommandHistory(Game game, Unit unit, String command, String details) {
         CommandHistory history = new CommandHistory();
         history.setGame(game);

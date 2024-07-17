@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @DiscriminatorValue("CANNON")
 public class Cannon extends Unit {
