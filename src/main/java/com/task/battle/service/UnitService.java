@@ -1,6 +1,7 @@
 package com.task.battle.service;
 
 import com.task.battle.data.BoardSize;
+import com.task.battle.data.CommandTypeEnum;
 import com.task.battle.data.Position;
 import com.task.battle.database.model.CommandHistory;
 import com.task.battle.database.model.Game;
@@ -43,6 +44,8 @@ public class UnitService {
 
         unit.setPosition(destination);
         unit.setMovesCount(unit.getMovesCount() + 1);
+        player.setNextCommandTimestamp(LocalDateTime.now().plusSeconds(unit.getCommandCooldown(CommandTypeEnum.MOVE)));
+
         unitRepository.save(unit);
     }
 
@@ -75,6 +78,7 @@ public class UnitService {
                 }
             }
         }
+        player.setNextCommandTimestamp(LocalDateTime.now().plusSeconds(unit.getCommandCooldown(CommandTypeEnum.SHOOT)));
 
         saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field (x: "+destination.getX()+", y: "+destination.getY());
     }
@@ -84,7 +88,7 @@ public class UnitService {
             return false;
         }
 
-        return unit.validateShooting(destination);
+        return unit.validateDestination(destination, CommandTypeEnum.SHOOT);
     }
 
     private boolean isValidMove(Unit unit, Position destination, Game game) {
@@ -92,7 +96,7 @@ public class UnitService {
             return false;
         }
 
-        if(!unit.validateMovement(destination)){
+        if(!unit.validateDestination(destination, CommandTypeEnum.MOVE)){
             return false;
         }
 

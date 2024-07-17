@@ -1,5 +1,6 @@
 package com.task.battle.database.model.unit;
 
+import com.task.battle.data.CommandTypeEnum;
 import com.task.battle.data.PlayerColorEnum;
 import com.task.battle.data.Position;
 import com.task.battle.database.model.Player;
@@ -35,10 +36,11 @@ public class Unit {
     boolean isDestroyed;
     int movesCount;
 
-    public boolean validateMovement(Position destination){
+    public boolean validateDestination(Position destination, CommandTypeEnum commandTypeEnum){
         return false;
     }
-    public boolean validateShooting(Position destination){
-        return false;
+
+    public int getCommandCooldown(CommandTypeEnum commandType){
+        return 0;
     }
 }
