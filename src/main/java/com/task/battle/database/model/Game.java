@@ -1,5 +1,6 @@
 package com.task.battle.database.model;
 
+import com.task.battle.data.BoardSize;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,9 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    int boardSize;
+    @Embedded
+    BoardSize boardSize;
+
     boolean isActive;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
