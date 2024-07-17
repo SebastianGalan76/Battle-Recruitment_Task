@@ -21,4 +21,11 @@ public class Archer extends Unit {
         int dy = Math.abs(position.getY() - destination.getY());
         return (dx == 1 && dy == 0) || (dx == 0 && dy == 1);
     }
+
+    @Override
+    public boolean validateShooting(Position destination) {
+        int dx = Math.abs(position.getX() - destination.getX());
+        int dy = Math.abs(position.getY() - destination.getY());
+        return (dx == 0 && dy > 0) || (dy == 0 && dx > 0);
+    }
 }

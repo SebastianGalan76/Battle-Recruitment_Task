@@ -8,32 +8,29 @@ import com.task.battle.database.model.unit.Archer;
 import com.task.battle.database.model.unit.Cannon;
 import com.task.battle.database.model.unit.Transport;
 import com.task.battle.database.model.unit.Unit;
-import com.task.battle.database.repository.PlayerRepository;
 import com.task.battle.database.repository.UnitRepository;
-import com.task.battle.exception.MoveUnitException;
+import com.task.battle.exception.UnitActionException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 @AllArgsConstructor
 public class UnitService {
     final UnitRepository unitRepository;
 
-    public void moveUnit(Long unitId, Position destination) throws MoveUnitException {
-        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new MoveUnitException("There is no unit with given id in our database!"));
+    public void moveUnit(Long unitId, Position destination) throws UnitActionException {
+        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
         if(unit.isDestroyed()){
-            throw new MoveUnitException("The unit is already destroyed!");
+            throw new UnitActionException("The unit is already destroyed!");
         }
 
         Player player = unit.getPlayer();
         if(!player.canMove()){
-            throw new MoveUnitException("You cannot move yet. Wait a few seconds!");
+            throw new UnitActionException("You cannot move yet. Wait a few seconds!");
         }
 
         if(!isValidMove(unit, destination, player.getGame())){
-            throw new MoveUnitException("Destination position is incorrect!");
+            throw new UnitActionException("Destination position is incorrect!");
         }
 
         unit.setPosition(destination);
@@ -41,20 +38,51 @@ public class UnitService {
         unitRepository.save(unit);
     }
 
-    private boolean isValidMove(Unit unit, Position destination, Game game) {
-        BoardSize boardSize = game.getBoardSize();
+    public void shoot(Long unitId, Position destination) throws UnitActionException {
+        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
+        if(unit.isDestroyed()){
+            throw new UnitActionException("The unit is already destroyed!");
+        }
 
-        if(destination.getX() < 0 || destination.getX()>boardSize.getWidth()
-                || destination.getY() < 0 || destination.getY()>boardSize.getHeight()){
+        Player player = unit.getPlayer();
+        if(!player.canMove()){
+            throw new UnitActionException("You cannot shoot yet. Wait a few seconds!");
+        }
+
+        Game game = player.getGame();
+        if(!isValidShoot(unit, destination, game)){
+            throw new UnitActionException("Destination position is incorrect!");
+        }
+
+        // Check for hitting other units
+        for(Player otherPlayer:game.getPlayers()){
+            for (Unit otherUnit : otherPlayer.getUnits()) {
+                if(otherUnit.isDestroyed()){
+                    continue;
+                }
+
+                if (otherUnit.getPosition().equals(destination)) {
+                    otherUnit.setDestroyed(true);
+                    unitRepository.save(otherUnit);
+                }
+            }
+        }
+    }
+
+    private boolean isValidShoot(Unit unit, Position destination, Game game) {
+        if(!isDestinationOnBoard(game.getBoardSize(), destination)){
             return false;
         }
 
-        if (unit instanceof Archer || unit instanceof  Transport) {
-            if(!unit.validateMovement(destination)){
-                return false;
-            }
-        } else if (unit instanceof Cannon) {
-            //Cannon cannot move
+        return unit.validateShooting(destination);
+    }
+
+    private boolean isValidMove(Unit unit, Position destination, Game game) {
+        if(!isDestinationOnBoard(game.getBoardSize(), destination)){
+            return false;
+        }
+
+        if(!unit.validateMovement(destination)){
             return false;
         }
 
@@ -80,5 +108,10 @@ public class UnitService {
         }
 
         return true;
+    }
+
+    private boolean isDestinationOnBoard(BoardSize boardSize, Position destination){
+        return destination.getX() >= 0 && destination.getX() <= boardSize.getWidth()
+                && destination.getY() >= 0 && destination.getY() <= boardSize.getHeight();
     }
 }

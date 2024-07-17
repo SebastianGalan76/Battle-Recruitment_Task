@@ -38,4 +38,7 @@ public class Unit {
     public boolean validateMovement(Position destination){
         return false;
     }
+    public boolean validateShooting(Position destination){
+        return false;
+    }
 }
