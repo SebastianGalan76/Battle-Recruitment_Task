@@ -70,4 +70,13 @@ public class UnitController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/info/{id}")
+    public ResponseEntity<UnitInformationDto> getUnitInformation(@PathVariable("id") Long id){
+        Unit unit = unitRepository.findById(id).orElse(null);
+        if(unit!=null){
+            return ResponseEntity.ok(unit.convertToUnitInformationDto());
+        }
+        return ResponseEntity.badRequest().body(null);
+    }
 }

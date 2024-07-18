@@ -1,5 +1,6 @@
 package com.task.battle.database.model.unit;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.task.battle.data.CommandTypeEnum;
 import com.task.battle.data.PlayerColorEnum;
