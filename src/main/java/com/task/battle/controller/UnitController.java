@@ -1,10 +1,7 @@
 package com.task.battle.controller;
 
 import com.task.battle.data.PlayerColorEnum;
-import com.task.battle.data.dto.ColorDto;
-import com.task.battle.data.dto.MoveDto;
-import com.task.battle.data.dto.ShootDto;
-import com.task.battle.data.dto.UnitInformationDto;
+import com.task.battle.data.dto.*;
 import com.task.battle.database.model.unit.Archer;
 import com.task.battle.database.model.unit.Cannon;
 import com.task.battle.database.model.unit.Transport;
@@ -40,7 +37,7 @@ public class UnitController {
 
         return ResponseEntity.ok(units);
     }
-    @PostMapping("/listAll")
+    @GetMapping("/listAll")
     public ResponseEntity<List<UnitInformationDto>> getAllUnitList() {
         List<UnitInformationDto> units = new ArrayList<>();
 
@@ -55,7 +52,7 @@ public class UnitController {
     public ResponseEntity<String> moveUnit(@RequestBody MoveDto moveDto){
         try{
             Unit unit = unitRepository.findById(moveDto.getUnitId()).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
-            unitService.moveUnit(unit, moveDto.getDestination());
+            unitService.moveUnit(unit, moveDto.getDestination(), false);
             return ResponseEntity.ok("SUCCESS");
         } catch (UnitActionException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -66,7 +63,7 @@ public class UnitController {
     public ResponseEntity<String> shootUnit(@RequestBody ShootDto shootDto){
         try{
             Unit unit = unitRepository.findById(shootDto.getUnitId()).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
-            unitService.shoot(unit, shootDto.getDestination());
+            unitService.shoot(unit, shootDto.getDestination(), false);
             return ResponseEntity.ok("SUCCESS");
         } catch (UnitActionException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -83,9 +80,9 @@ public class UnitController {
     }
 
     @PostMapping("/randomAction")
-    public ResponseEntity<String> performRandomAction(@RequestBody ColorDto colorDto) {
+    public ResponseEntity<String> performRandomAction(@RequestBody RandomActionDto randomActionDto) {
         try{
-            String actionDetail = unitService.performRandomAction(colorDto.getColor());
+            String actionDetail = unitService.performRandomAction(randomActionDto.getColor(), randomActionDto.isIgnoreCooldown());
             return ResponseEntity.ok("SUCCESS \nAction: "+actionDetail);
         } catch (UnitActionException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

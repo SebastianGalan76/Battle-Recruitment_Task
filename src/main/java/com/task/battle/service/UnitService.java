@@ -29,13 +29,13 @@ public class UnitService {
     final GameService gameService;
 
     @Transactional
-    public synchronized String moveUnit(Unit unit, Position destination) throws UnitActionException {
+    public synchronized String moveUnit(Unit unit, Position destination, boolean ignoreCooldown) throws UnitActionException {
         if(unit.isDestroyed()){
             throw new UnitActionException("The unit is already destroyed!");
         }
 
         Player player = unit.getPlayer();
-        if(!player.canMove()){
+        if(!ignoreCooldown && !player.canMove()){
             throw new UnitActionException("You cannot move yet. Wait a few seconds!");
         }
 
@@ -57,15 +57,14 @@ public class UnitService {
 
         return commandDetail;
     }
-
     @Transactional
-    public synchronized String shoot(Unit unit, Position destination) throws UnitActionException {
+    public synchronized String shoot(Unit unit, Position destination, boolean ignoreCooldown) throws UnitActionException {
         if(unit.isDestroyed()){
             throw new UnitActionException("The unit is already destroyed!");
         }
 
         Player player = unit.getPlayer();
-        if(!player.canMove()){
+        if(!ignoreCooldown && !player.canMove()){
             throw new UnitActionException("You cannot shoot yet. Wait a few seconds!");
         }
 
@@ -99,7 +98,7 @@ public class UnitService {
         return commandDetail;
     }
 
-    public synchronized String performRandomAction(PlayerColorEnum color) throws UnitActionException {
+    public synchronized String performRandomAction(PlayerColorEnum color, boolean ignoreCooldown) throws UnitActionException {
         Game game = gameService.getCurrentGame();
         if(game == null || game.isFinished()){
             throw new UnitActionException("There is no active game!");
@@ -119,7 +118,7 @@ public class UnitService {
 
                 if(!positions.isEmpty()){
                     Position position = positions.get(random.nextInt(positions.size()));
-                    return moveUnit(unit, position);
+                    return moveUnit(unit, position, ignoreCooldown);
                 }
             }
             else{
@@ -127,7 +126,7 @@ public class UnitService {
 
                 if(!positions.isEmpty()){
                     Position position = positions.get(random.nextInt(positions.size()));
-                    return shoot(unit, position);
+                    return shoot(unit, position, ignoreCooldown);
                 }
             }
         }
