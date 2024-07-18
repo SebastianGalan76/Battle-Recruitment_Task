@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,4 +20,6 @@ public class UnitInformationDto {
     String status; //Active or Destroyed
     int moveCount;
 
+    List<Position> possibleMoves;
+    List<Position> possibleShots;
 }

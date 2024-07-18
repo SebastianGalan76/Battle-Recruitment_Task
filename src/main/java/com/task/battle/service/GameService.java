@@ -10,6 +10,7 @@ import com.task.battle.exception.GameConfigurationException;
 import com.task.battle.util.UnitUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +19,8 @@ import java.time.LocalDateTime;
 public class GameService {
     final GameRepository gameRepository;
 
-    public Game createNewGame(GameConfiguration gameConfiguration) throws GameConfigurationException {
+    @Transactional
+    public synchronized Game createNewGame(GameConfiguration gameConfiguration) throws GameConfigurationException {
         checkGameBoard(gameConfiguration);
         checkUnitAmount(gameConfiguration);
 
@@ -27,25 +29,25 @@ public class GameService {
         game.setBoardSize(gameConfiguration.getBoardSize());
 
         //Created players
-        Player playerWhite = new Player();
-        playerWhite.setColor(PlayerColorEnum.WHITE);
-        UnitUtils.generateUnitsForPlayer(gameConfiguration, playerWhite);
-        playerWhite.setGame(game);
-        playerWhite.setNextCommandTimestamp(LocalDateTime.now());
-        game.getPlayers().add(playerWhite);
-
-        Player playerBlack = new Player();
-        playerBlack.setColor(PlayerColorEnum.BLACK);
-        UnitUtils.generateUnitsForPlayer(gameConfiguration, playerBlack);
-        playerBlack.setGame(game);
-        playerBlack.setNextCommandTimestamp(LocalDateTime.now());
-        game.getPlayers().add(playerBlack);
+        createPlayer(PlayerColorEnum.WHITE, gameConfiguration, game);
+        createPlayer(PlayerColorEnum.BLACK, gameConfiguration, game);
 
         for(Game oldGame:gameRepository.findAll()){
             gameRepository.delete(oldGame);
         }
 
         return gameRepository.save(game);
+    }
+
+    private void createPlayer(PlayerColorEnum color, GameConfiguration gameConfiguration, Game game){
+        Player player = new Player();
+        player.setGame(game);
+        player.setColor(color);
+
+        UnitUtils.generateUnitsForPlayer(gameConfiguration, player);
+        player.setNextCommandTimestamp(LocalDateTime.now());
+
+        game.getPlayers().add(player);
     }
 
     private void checkGameBoard(GameConfiguration gameConfiguration) throws GameConfigurationException {

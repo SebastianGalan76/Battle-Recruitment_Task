@@ -33,7 +33,7 @@ public class Player {
     @Column(name = "next_command_timestamp")
     LocalDateTime nextCommandTimestamp;
 
-    public void performMovement(int delay){
+    public void setCooldown(int delay){
         nextCommandTimestamp = LocalDateTime.now().plusSeconds(delay);
     }
 

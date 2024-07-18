@@ -13,6 +13,7 @@ import com.task.battle.database.repository.UnitRepository;
 import com.task.battle.exception.UnitActionException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -22,7 +23,8 @@ public class UnitService {
     final UnitRepository unitRepository;
     final CommandHistoryRepository commandHistoryRepository;
 
-    public void moveUnit(Long unitId, Position destination) throws UnitActionException {
+    @Transactional
+    public synchronized void moveUnit(Long unitId, Position destination) throws UnitActionException {
         Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
         if(unit.isDestroyed()){
             throw new UnitActionException("The unit is already destroyed!");
@@ -38,14 +40,14 @@ public class UnitService {
 
         saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY());
 
-        unit.setPosition(destination);
-        unit.setMovesCount(unit.getMovesCount() + 1);
-        player.setNextCommandTimestamp(LocalDateTime.now().plusSeconds(unit.getCommandCooldown(CommandTypeEnum.MOVE)));
+        unit.performMove(destination);
+        player.setCooldown(unit.getCommandCooldown(CommandTypeEnum.MOVE));
 
         unitRepository.save(unit);
     }
 
-    public void shoot(Long unitId, Position destination) throws UnitActionException {
+    @Transactional
+    public synchronized void shoot(Long unitId, Position destination) throws UnitActionException {
         Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
         if(unit.isDestroyed()){
             throw new UnitActionException("The unit is already destroyed!");
@@ -72,7 +74,7 @@ public class UnitService {
                 }
             }
         }
-        player.setNextCommandTimestamp(LocalDateTime.now().plusSeconds(unit.getCommandCooldown(CommandTypeEnum.SHOOT)));
+        player.setCooldown(unit.getCommandCooldown(CommandTypeEnum.SHOOT));
 
         saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")");
     }

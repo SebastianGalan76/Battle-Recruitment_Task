@@ -1,13 +1,12 @@
 package com.task.battle.database.model.unit;
 
+import com.task.battle.data.BoardSize;
 import com.task.battle.data.CommandTypeEnum;
 import com.task.battle.data.Position;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Data
@@ -39,5 +38,62 @@ public class Archer extends Unit {
             return 10;
         }
         return 0;
+    }
+
+    @Override
+    public void calculatePossibleMoves() {
+        possibleMoves.clear();
+
+        int x = position.getX();
+        int y = position.getY();
+
+        //Move left
+        if (x - 1 >= 0) {
+            possibleMoves.add(new Position(x - 1, y));
+        }
+
+        //Move right
+        if (x + 1 < player.getGame().getBoardSize().getWidth()) {
+            possibleMoves.add(new Position(x + 1, y));
+        }
+
+        //Move up
+        if (y - 1 >= 0) {
+            possibleMoves.add(new Position(x, y - 1));
+        }
+
+        //Move down
+        if (y + 1 < player.getGame().getBoardSize().getHeight()) {
+            possibleMoves.add(new Position(x, y + 1));
+        }
+    }
+    @Override
+    public void calculatePossibleShots() {
+        possibleShots.clear();
+
+        int x = position.getX();
+        int y = position.getY();
+
+        BoardSize boardSize = player.getGame().getBoardSize();
+
+        //Shoot up
+        for(int i = y + 1;i<boardSize.getHeight();i++){
+            possibleShots.add(new Position(x, i));
+        }
+
+        //Shoot down
+        for(int i = y - 1;i>=0;i--){
+            possibleShots.add(new Position(x, i));
+        }
+
+        //Shoot right
+        for(int i = x + 1;i<boardSize.getWidth();i++){
+            possibleShots.add(new Position(i, y));
+        }
+
+        //Shoot left
+        for(int i = x - 1;i>=0;i--){
+            possibleShots.add(new Position(i, y));
+        }
     }
 }

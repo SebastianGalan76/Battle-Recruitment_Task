@@ -10,7 +10,6 @@ import com.task.battle.database.model.unit.Transport;
 import com.task.battle.database.model.unit.Unit;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
