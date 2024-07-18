@@ -38,6 +38,10 @@ public class GameService {
         return gameRepository.save(game);
     }
 
+    public Game getCurrentGame(){
+        return gameRepository.findFirstByOrderByIdAsc();
+    }
+
     public void checkGameStatus(Game game){
         Player whitePlayer = game.getPlayer(PlayerColorEnum.WHITE);
         if(!whitePlayer.hasUnit()){

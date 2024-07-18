@@ -54,7 +54,8 @@ public class UnitController {
     @PostMapping("/move")
     public ResponseEntity<String> moveUnit(@RequestBody MoveDto moveDto){
         try{
-            unitService.moveUnit(moveDto.getUnitId(), moveDto.getDestination());
+            Unit unit = unitRepository.findById(moveDto.getUnitId()).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
+            unitService.moveUnit(unit, moveDto.getDestination());
             return ResponseEntity.ok("SUCCESS");
         } catch (UnitActionException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -64,7 +65,8 @@ public class UnitController {
     @PostMapping("/shoot")
     public ResponseEntity<String> shootUnit(@RequestBody ShootDto shootDto){
         try{
-            unitService.shoot(shootDto.getUnitId(), shootDto.getDestination());
+            Unit unit = unitRepository.findById(shootDto.getUnitId()).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
+            unitService.shoot(unit, shootDto.getDestination());
             return ResponseEntity.ok("SUCCESS");
         } catch (UnitActionException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -78,5 +80,15 @@ public class UnitController {
             return ResponseEntity.ok(unit.convertToUnitInformationDto());
         }
         return ResponseEntity.badRequest().body(null);
+    }
+
+    @PostMapping("/randomAction")
+    public ResponseEntity<String> performRandomAction(@RequestBody ColorDto colorDto) {
+        try{
+            String actionDetail = unitService.performRandomAction(colorDto.getColor());
+            return ResponseEntity.ok("SUCCESS \nAction: "+actionDetail);
+        } catch (UnitActionException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

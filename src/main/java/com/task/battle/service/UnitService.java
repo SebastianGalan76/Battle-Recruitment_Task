@@ -2,6 +2,7 @@ package com.task.battle.service;
 
 import com.task.battle.data.BoardSize;
 import com.task.battle.data.CommandTypeEnum;
+import com.task.battle.data.PlayerColorEnum;
 import com.task.battle.data.Position;
 import com.task.battle.database.model.CommandHistory;
 import com.task.battle.database.model.Game;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -26,8 +29,7 @@ public class UnitService {
     final GameService gameService;
 
     @Transactional
-    public synchronized void moveUnit(Long unitId, Position destination) throws UnitActionException {
-        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
+    public synchronized String moveUnit(Unit unit, Position destination) throws UnitActionException {
         if(unit.isDestroyed()){
             throw new UnitActionException("The unit is already destroyed!");
         }
@@ -44,19 +46,20 @@ public class UnitService {
 
         checkMove(unit, destination, game);
 
-        saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY());
+        String commandDetail = "Player ("+player.getId()+") move unit ("+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY() +")";
+        saveCommandHistory(game, unit, "MOVE", commandDetail);
 
         unit.performMove(destination);
         player.setCooldown(unit.getCommandCooldown(CommandTypeEnum.MOVE));
 
         unitRepository.save(unit);
-
         gameService.checkGameStatus(game);
+
+        return commandDetail;
     }
 
     @Transactional
-    public synchronized void shoot(Long unitId, Position destination) throws UnitActionException {
-        Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
+    public synchronized String shoot(Unit unit, Position destination) throws UnitActionException {
         if(unit.isDestroyed()){
             throw new UnitActionException("The unit is already destroyed!");
         }
@@ -88,10 +91,46 @@ public class UnitService {
         }
         player.setCooldown(unit.getCommandCooldown(CommandTypeEnum.SHOOT));
 
-
-        saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")");
-
         gameService.checkGameStatus(game);
+
+        String commandDetail = "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")";
+        saveCommandHistory(game, unit, "SHOT", commandDetail);
+
+        return commandDetail;
+    }
+
+    public synchronized String performRandomAction(PlayerColorEnum color) throws UnitActionException {
+        Game game = gameService.getCurrentGame();
+        if(game == null || game.isFinished()){
+            throw new UnitActionException("There is no active game!");
+        }
+
+        Player player = game.getPlayer(color);
+        if(player == null){
+            throw new UnitActionException("Something went wrong. There is no player of the specified color!");
+        }
+
+        Random random = new Random();
+
+        while (true){
+            Unit unit = getRandomActiveUnit(player.getUnits());
+            if(random.nextInt(2)==0){
+                List<Position> positions = unit.getPossibleMoves();
+
+                if(!positions.isEmpty()){
+                    Position position = positions.get(random.nextInt(positions.size()));
+                    return moveUnit(unit, position);
+                }
+            }
+            else{
+                List<Position> positions = unit.getPossibleShots();
+
+                if(!positions.isEmpty()){
+                    Position position = positions.get(random.nextInt(positions.size()));
+                    return shoot(unit, position);
+                }
+            }
+        }
     }
 
     private void checkShoot(Unit unit, Position destination, Game game) throws UnitActionException {
@@ -146,5 +185,17 @@ public class UnitService {
         history.setDetails(details);
         history.setDate(LocalDateTime.now());
         commandHistoryRepository.save(history);
+    }
+
+    private Unit getRandomActiveUnit(List<Unit> units){
+        Random random = new Random();
+        int size = units.size();
+
+        while (true){
+            Unit unit = units.get(random.nextInt(size));
+            if(!unit.isDestroyed()){
+                return unit;
+            }
+        }
     }
 }
