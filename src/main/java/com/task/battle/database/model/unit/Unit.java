@@ -6,6 +6,7 @@ import com.task.battle.data.CommandTypeEnum;
 import com.task.battle.data.PlayerColorEnum;
 import com.task.battle.data.Position;
 import com.task.battle.data.dto.UnitInformationDto;
+import com.task.battle.database.model.Game;
 import com.task.battle.database.model.Player;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,6 @@ import java.util.Objects;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="unit_type", discriminatorType = DiscriminatorType.STRING)
 public class Unit {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
@@ -37,6 +37,10 @@ public class Unit {
     @ManyToOne
     @JoinColumn(name = "player_id")
     Player player;
+
+    @ManyToOne
+    @JoinColumn(name = "game_id")
+    Game game;
 
     boolean isDestroyed;
     int movesCount;

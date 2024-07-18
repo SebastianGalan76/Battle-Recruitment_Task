@@ -2,12 +2,14 @@ package com.task.battle.controller;
 
 import com.task.battle.data.PlayerColorEnum;
 import com.task.battle.data.dto.*;
+import com.task.battle.database.model.Game;
 import com.task.battle.database.model.unit.Archer;
 import com.task.battle.database.model.unit.Cannon;
 import com.task.battle.database.model.unit.Transport;
 import com.task.battle.database.model.unit.Unit;
 import com.task.battle.database.repository.UnitRepository;
 import com.task.battle.exception.UnitActionException;
+import com.task.battle.service.GameService;
 import com.task.battle.service.UnitService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +25,17 @@ public class UnitController {
     final UnitRepository unitRepository;
     final UnitService unitService;
 
+    final GameService gameService;
+
     @PostMapping("/list")
     public ResponseEntity<List<UnitInformationDto>> getUnitList(@RequestBody ColorDto colorDto) {
+        Game game = gameService.getCurrentGame();
+        if(game == null){
+            return ResponseEntity.ok(null);
+        }
+
         List<UnitInformationDto> units = new ArrayList<>();
-
-        for(Unit unit:unitRepository.findAll()){
-            if(unit.getColor()!=colorDto.getColor()){
-                continue;
-            }
-
+        for(Unit unit:unitRepository.findUnitsByGameIdAndColor(game.getId(), colorDto.getColor())){
             units.add(unit.convertToUnitInformationDto());
         }
 
@@ -39,9 +43,13 @@ public class UnitController {
     }
     @GetMapping("/listAll")
     public ResponseEntity<List<UnitInformationDto>> getAllUnitList() {
-        List<UnitInformationDto> units = new ArrayList<>();
+        Game game = gameService.getCurrentGame();
+        if(game == null){
+            return ResponseEntity.ok(null);
+        }
 
-        for(Unit unit:unitRepository.findAll()){
+        List<UnitInformationDto> units = new ArrayList<>();
+        for(Unit unit:unitRepository.findUnitsByGameId(game.getId())){
             units.add(unit.convertToUnitInformationDto());
         }
 

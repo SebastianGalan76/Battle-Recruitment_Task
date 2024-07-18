@@ -31,27 +31,33 @@ public class GameService {
         createPlayer(PlayerColorEnum.WHITE, gameConfiguration, game);
         createPlayer(PlayerColorEnum.BLACK, gameConfiguration, game);
 
-        for(Game oldGame:gameRepository.findAll()){
-            gameRepository.delete(oldGame);
+        Game activeGame = gameRepository.findActiveGame();
+        if(activeGame!=null){
+            activeGame.setFinished(true);
+            gameRepository.save(activeGame);
         }
 
         return gameRepository.save(game);
     }
 
     public Game getCurrentGame(){
-        return gameRepository.findFirstByOrderByIdAsc();
+        return gameRepository.findActiveGame();
     }
 
     public void checkGameStatus(Game game){
         Player whitePlayer = game.getPlayer(PlayerColorEnum.WHITE);
         if(!whitePlayer.hasUnit()){
             game.setFinished(true);
+            game.setWinner(game.getPlayer(PlayerColorEnum.BLACK));
         }
 
         Player blackPlayer = game.getPlayer(PlayerColorEnum.BLACK);
         if(!blackPlayer.hasUnit()){
             game.setFinished(true);
+            game.setWinner(game.getPlayer(PlayerColorEnum.WHITE));
         }
+
+        gameRepository.save(game);
     }
 
     private void createPlayer(PlayerColorEnum color, GameConfiguration gameConfiguration, Game game){
@@ -59,7 +65,7 @@ public class GameService {
         player.setGame(game);
         player.setColor(color);
 
-        UnitUtils.generateUnitsForPlayer(gameConfiguration, player);
+        UnitUtils.generateUnitsForPlayer(gameConfiguration, player, game);
         player.setNextCommandTimestamp(LocalDateTime.now());
 
         game.getPlayers().add(player);

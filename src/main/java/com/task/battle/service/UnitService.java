@@ -39,14 +39,14 @@ public class UnitService {
             throw new UnitActionException("You cannot move yet. Wait a few seconds!");
         }
 
-        Game game = player.getGame();
+        Game game = unit.getGame();
         if(game.isFinished()){
             throw new UnitActionException("You cannot move. Game is over!");
         }
 
         checkMove(unit, destination, game);
 
-        String commandDetail = "Player ("+player.getId()+") move unit ("+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY() +")";
+        String commandDetail = "Player ("+player.getId()+") move unit (ID: "+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY() +")";
         saveCommandHistory(game, unit, "MOVE", commandDetail);
 
         unit.performMove(destination);
@@ -68,7 +68,7 @@ public class UnitService {
             throw new UnitActionException("You cannot shoot yet. Wait a few seconds!");
         }
 
-        Game game = player.getGame();
+        Game game = unit.getGame();
         if(game.isFinished()){
             throw new UnitActionException("You cannot shoot. Game is over!");
         }
@@ -92,7 +92,7 @@ public class UnitService {
 
         gameService.checkGameStatus(game);
 
-        String commandDetail = "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")";
+        String commandDetail = "Player ("+player.getId()+") shoot using unit (ID: "+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")";
         saveCommandHistory(game, unit, "SHOT", commandDetail);
 
         return commandDetail;
