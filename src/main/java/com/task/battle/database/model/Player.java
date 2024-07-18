@@ -37,6 +37,15 @@ public class Player {
         nextCommandTimestamp = LocalDateTime.now().plusSeconds(delay);
     }
 
+    public boolean hasUnit(){
+        for(Unit unit:units){
+            if(!unit.isDestroyed()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean canMove(){
         return LocalDateTime.now().isAfter(nextCommandTimestamp);
     }

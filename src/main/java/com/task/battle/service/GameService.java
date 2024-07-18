@@ -25,7 +25,6 @@ public class GameService {
         checkUnitAmount(gameConfiguration);
 
         Game game = new Game();
-        game.setActive(true);
         game.setBoardSize(gameConfiguration.getBoardSize());
 
         //Created players
@@ -37,6 +36,18 @@ public class GameService {
         }
 
         return gameRepository.save(game);
+    }
+
+    public void checkGameStatus(Game game){
+        Player whitePlayer = game.getPlayer(PlayerColorEnum.WHITE);
+        if(!whitePlayer.hasUnit()){
+            game.setFinished(true);
+        }
+
+        Player blackPlayer = game.getPlayer(PlayerColorEnum.BLACK);
+        if(!blackPlayer.hasUnit()){
+            game.setFinished(true);
+        }
     }
 
     private void createPlayer(PlayerColorEnum color, GameConfiguration gameConfiguration, Game game){

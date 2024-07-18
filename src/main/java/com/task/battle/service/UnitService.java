@@ -23,6 +23,8 @@ public class UnitService {
     final UnitRepository unitRepository;
     final CommandHistoryRepository commandHistoryRepository;
 
+    final GameService gameService;
+
     @Transactional
     public synchronized void moveUnit(Long unitId, Position destination) throws UnitActionException {
         Unit unit = unitRepository.findById(unitId).orElseThrow(() -> new UnitActionException("There is no unit with given id in our database!"));
@@ -36,6 +38,10 @@ public class UnitService {
         }
 
         Game game = player.getGame();
+        if(game.isFinished()){
+            throw new UnitActionException("You cannot move. Game is over!");
+        }
+
         checkMove(unit, destination, game);
 
         saveCommandHistory(game, unit, "MOVE", "Player ("+player.getId()+") move unit ("+unit.getId()+") from ("+unit.getPosition().getX()+", "+unit.getPosition().getY()+ ") to (" +destination.getX()+", "+destination.getY());
@@ -44,6 +50,8 @@ public class UnitService {
         player.setCooldown(unit.getCommandCooldown(CommandTypeEnum.MOVE));
 
         unitRepository.save(unit);
+
+        gameService.checkGameStatus(game);
     }
 
     @Transactional
@@ -59,6 +67,10 @@ public class UnitService {
         }
 
         Game game = player.getGame();
+        if(game.isFinished()){
+            throw new UnitActionException("You cannot shoot. Game is over!");
+        }
+
         checkShoot(unit, destination, game);
 
         // Check for hitting other units
@@ -76,7 +88,10 @@ public class UnitService {
         }
         player.setCooldown(unit.getCommandCooldown(CommandTypeEnum.SHOOT));
 
+
         saveCommandHistory(game, unit, "SHOT", "Player ("+player.getId()+") shoot using unit ("+unit.getId()+") at the field ("+destination.getX()+", "+destination.getY()+")");
+
+        gameService.checkGameStatus(game);
     }
 
     private void checkShoot(Unit unit, Position destination, Game game) throws UnitActionException {

@@ -1,6 +1,7 @@
 package com.task.battle.database.model;
 
 import com.task.battle.data.BoardSize;
+import com.task.battle.data.PlayerColorEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,11 +22,21 @@ public class Game {
     @Embedded
     BoardSize boardSize;
 
-    boolean isActive;
+    boolean isFinished;
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<Player> players = new ArrayList<>();
 
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<CommandHistory> commandHistory = new ArrayList<>();
+
+    public Player getPlayer(PlayerColorEnum color){
+        for(Player player:players){
+            if(player.getColor() == color){
+                return player;
+            }
+        }
+
+        return null;
+    }
 }
